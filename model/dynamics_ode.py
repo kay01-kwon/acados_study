@@ -3,7 +3,7 @@ from casadi import SX, vertcat
 
 def export_dynamics_ode_model() -> AcadosModel:
 
-    model_name = '1d_double_intergral'
+    model_name = 'simple_system'
 
     # dxdt = v
     # dvdt = 1/m * u
@@ -12,8 +12,9 @@ def export_dynamics_ode_model() -> AcadosModel:
     m = 1.
 
     # Set up states and control
-    x = SX.sym('x')
-    v = SX.sym('v')
+    x1 = SX.sym('x1')
+    v1 = SX.sym('v1')
+    x = vertcat(x1, v1)
 
     u = SX.sym('u')
 
@@ -24,10 +25,10 @@ def export_dynamics_ode_model() -> AcadosModel:
 
     xdot = vertcat(dxdt, dvdt)
 
-    f_expl = vertcat(v,
+    f_expl = vertcat(v1,
                      1/m*u)
 
-    f_impl = dsdt - f_expl
+    f_impl = xdot - f_expl
 
     model = AcadosModel()
 
@@ -37,7 +38,5 @@ def export_dynamics_ode_model() -> AcadosModel:
     model.xdot = xdot
     model.u = u
     model.name = model_name
-
-    
 
     return model
