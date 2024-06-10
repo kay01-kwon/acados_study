@@ -1,16 +1,19 @@
-from acados_template import AcadosOcp, AcadosOcpSolver
+from acados_template import AcadosOcp, AcadosOcpSolver, AcadosSimSolver
 from model import dynamics_ode
 from utils import plot_util
 import numpy as np
 
-def run():
+# Initial state
+X0 = np.array([0.0, 0.0])
+
+def create_ocp_solver() -> AcadosOcp:
     # Create ocp object to formulate the OCP
     ocp = AcadosOcp()
 
-    model = dynamics_ode()
+    model = dynamics_ode.export_dynamics_ode_model()
     ocp.model = model
 
-    Tf = 1.0
+    T_horizon = 1.0
     N = 20
     nx = model.x.rows()
     nu = model.u.rows()
@@ -18,14 +21,74 @@ def run():
     # Set the number of shooting intervals
     ocp.dims.N = N
 
+    # OCP objective function
     # Set cost
-    Q_mat = 2*np.diag([100, 100])
-    R_mat = 2*np.diag([10])
+    # cost Q: x, v
+    Q_mat = 2*np.diag([100, 1e-2])
+    # cost R: u
+    R_mat = 2*10
 
     ocp.cost.cost_type = 'LINEAR_LS'
     ocp.cost.cost_type_e = 'LINEAR_LS'
 
+    ocp.cost.W = np.diag([10, 1e-2, 1])
+    ocp.cost.W_e = Q_mat
+
     Umax = 10
     ocp.constraints.lbu = np.array([-Umax])
     ocp.constraints.ubu = np.array([Umax])
-    ocp.constraints.idxbu = np.array([0, 1])
+    ocp.constraints.idxbu = np.array([0])
+
+    ocp.constraints.x0 = X0
+
+    # set options
+    ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"  # FULL_CONDENSING_QPOASES
+    ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
+    ocp.solver_options.integrator_type = "IRK"
+    ocp.solver_options.nlp_solver_type = "SQP"
+
+    # set prediction horizon
+    ocp.solver_options.tf = T_horizon
+
+    return ocp
+
+def closed_loop_simulation():
+
+    # Create solvers
+    ocp = create_ocp_solver()
+    model = ocp.model
+    acados_ocp_solver = AcadosOcpSolver(ocp)
+    acados_integrator = AcadosSimSolver(ocp)
+
+    N_horizon = acados_ocp_solver.N
+
+    # Prepare for simulation
+    Nsim = 100
+    nx = ocp.model.x.rows()
+    nu = ocp.model.u.rows()
+
+    simX = np.zeros((Nsim + 1, nx))
+    simU = np.zeros((Nsim,nu))
+
+    xcurrent = X0
+    simX[0,:] = xcurrent
+
+    y_ref = np.array([2, 0, 0])
+    y_ref_N = np.array([2, 0])
+
+    # Initialize solver
+    for stage in range(N_horizon + 1):
+        acados_ocp_solver.set(stage, "x", 0.0*np.ones(xcurrent.shape))
+    for stage in range(N_horizon):
+        acados_ocp_solver.set(stage, "u",np.zeros((nu,)))
+
+    # Closed loop
+    for i in range(Nsim):
+        for j in range(N_horizon):
+            acados_ocp_solver.set(j,"y_ref", y_ref)
+        acados_ocp_solver.set(N_horizon, "y_ref", y_ref_N)
+
+        simU[i,:] = acados_ocp_solver.solve_for_x0(xcurrent)
+
+if __name__ == "__main__":
+    closed_loop_simulation()

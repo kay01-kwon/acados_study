@@ -39,4 +39,8 @@ def export_dynamics_ode_model() -> AcadosModel:
     model.u = u
     model.name = model_name
 
+    model.t_label = "$t$ [s]"
+    model.x_labels = ["$x$ [m]","$v$ [m/s]"]
+    model.u_label = "$u$ [N]"
+
     return model
