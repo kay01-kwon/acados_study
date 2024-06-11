@@ -1,7 +1,9 @@
 from acados_template import AcadosOcp, AcadosOcpSolver, AcadosSimSolver
 from model import dynamics_ode
+import scipy.linalg
 from utils import plot_util
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Initial state
 X0 = np.array([0.0, 0.0])
@@ -17,6 +19,9 @@ def create_ocp_solver() -> AcadosOcp:
     N = 20
     nx = model.x.rows()
     nu = model.u.rows()
+    ny = nx + nu
+
+    ny_e = nx
 
     # Set the number of shooting intervals
     ocp.dims.N = N
@@ -24,15 +29,24 @@ def create_ocp_solver() -> AcadosOcp:
     # OCP objective function
     # Set cost
     # cost Q: x, v
-    Q_mat = 2*np.diag([100, 1e-2])
+    Q_mat = 2*np.diag([100, 10])
     # cost R: u
     R_mat = 2*10
 
     ocp.cost.cost_type = 'LINEAR_LS'
     ocp.cost.cost_type_e = 'LINEAR_LS'
 
-    ocp.cost.W = np.diag([10, 1e-2, 1])
+    ocp.cost.Vx = np.zeros((ny, nx))
+    ocp.cost.Vu = np.zeros((ny, nu))
+    ocp.cost.Vx[0,0] = 1.0
+    ocp.cost.Vx[1,1] = 1.0
+    ocp.cost.W = scipy.linalg.block_diag(Q_mat, R_mat)
+
+    ocp.cost.Vx_e = np.eye(nx)
+    ocp.cost.yref = np.zeros((ny, ))
+    ocp.cost.yref_e = np.zeros((ny_e,))
     ocp.cost.W_e = Q_mat
+
 
     Umax = 10
     ocp.constraints.lbu = np.array([-Umax])
@@ -89,6 +103,12 @@ def closed_loop_simulation():
         acados_ocp_solver.set(N_horizon, "y_ref", y_ref_N)
 
         simU[i,:] = acados_ocp_solver.solve_for_x0(xcurrent)
+        xcurrent = acados_integrator.simulate(xcurrent, simU[i,:])
+        simX[i + 1,:] = xcurrent
+
+    # plt.plot(simX)
+    plt.plot(simU)
+    plt.show()
 
 if __name__ == "__main__":
     closed_loop_simulation()
