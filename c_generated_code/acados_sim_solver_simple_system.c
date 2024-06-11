@@ -74,7 +74,7 @@ int simple_system_acados_sim_create(simple_system_sim_solver_capsule * capsule)
     bool tmp_bool;
 
     
-    double Tsim = 0.05;
+    double Tsim = 0.04;
 
     
     capsule->sim_impl_dae_fun = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi));

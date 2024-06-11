@@ -63,7 +63,7 @@
 #define SIMPLE_SYSTEM_NY0    3
 #define SIMPLE_SYSTEM_NY     3
 #define SIMPLE_SYSTEM_NYN    2
-#define SIMPLE_SYSTEM_N      20
+#define SIMPLE_SYSTEM_N      50
 #define SIMPLE_SYSTEM_NH     0
 #define SIMPLE_SYSTEM_NHN    0
 #define SIMPLE_SYSTEM_NH0    0

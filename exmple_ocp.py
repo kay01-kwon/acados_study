@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 # Initial state
 X0 = np.array([0.0, 0.0])
+T_horizon = 2.0
 
 def create_ocp_solver() -> AcadosOcp:
     # Create ocp object to formulate the OCP
@@ -15,8 +16,7 @@ def create_ocp_solver() -> AcadosOcp:
     model = dynamics_ode.export_dynamics_ode_model()
     ocp.model = model
 
-    T_horizon = 1.0
-    N = 20
+    N = 50
     nx = model.x.rows()
     nu = model.u.rows()
     ny = nx + nu
@@ -29,9 +29,9 @@ def create_ocp_solver() -> AcadosOcp:
     # OCP objective function
     # Set cost
     # cost Q: x, v
-    Q_mat = 2*np.diag([100, 10])
+    Q_mat = 2*np.diag([1000, 700])
     # cost R: u
-    R_mat = 2*10
+    R_mat = 2*5*1e-1
 
     ocp.cost.cost_type = 'LINEAR_LS'
     ocp.cost.cost_type_e = 'LINEAR_LS'
@@ -51,15 +51,17 @@ def create_ocp_solver() -> AcadosOcp:
     Umax = 10
     ocp.constraints.lbu = np.array([-Umax])
     ocp.constraints.ubu = np.array([Umax])
+    # ocp.constraints.lbx = np.array([-100, -1, -Umax])
+    # ocp.constraints.ubx = np.array([100, 1, Umax])
     ocp.constraints.idxbu = np.array([0])
 
     ocp.constraints.x0 = X0
 
     # set options
-    ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"  # FULL_CONDENSING_QPOASES
+    ocp.solver_options.qp_solver = "FULL_CONDENSING_HPIPM"  # FULL_CONDENSING_QPOASES
     ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
     ocp.solver_options.integrator_type = "IRK"
-    ocp.solver_options.nlp_solver_type = "SQP"
+    ocp.solver_options.nlp_solver_type = "SQP_RTI"
 
     # set prediction horizon
     ocp.solver_options.tf = T_horizon
@@ -77,7 +79,7 @@ def closed_loop_simulation():
     N_horizon = acados_ocp_solver.N
 
     # Prepare for simulation
-    Nsim = 100
+    Nsim = 200
     nx = ocp.model.x.rows()
     nu = ocp.model.u.rows()
 
@@ -87,8 +89,8 @@ def closed_loop_simulation():
     xcurrent = X0
     simX[0,:] = xcurrent
 
-    y_ref = np.array([2, 0, 0])
-    y_ref_N = np.array([2, 0])
+    y_ref = np.array([20, 0, 0])
+    y_ref_N = np.array([20, 0])
 
     # Initialize solver
     for stage in range(N_horizon + 1):
@@ -98,6 +100,7 @@ def closed_loop_simulation():
 
     # Closed loop
     for i in range(Nsim):
+
         for j in range(N_horizon):
             acados_ocp_solver.set(j,"y_ref", y_ref)
         acados_ocp_solver.set(N_horizon, "y_ref", y_ref_N)
@@ -106,8 +109,12 @@ def closed_loop_simulation():
         xcurrent = acados_integrator.simulate(xcurrent, simU[i,:])
         simX[i + 1,:] = xcurrent
 
-    # plt.plot(simX)
-    plt.plot(simU)
+    plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim+1),simX[:,0])
+    plt.xlabel("Time")
+    plt.ylabel("x [m]")
+
+    # plt.plot(simU)
+
     plt.show()
 
 if __name__ == "__main__":
