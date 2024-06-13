@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # Initial state
 X0 = np.array([0.0, 0.0, 0.0, 0.0])
-T_horizon = 1.0
+T_horizon = 5.0
 
 def create_ocp_solver() -> AcadosOcp:
     # Create ocp object to formulate the OCP
@@ -16,7 +16,7 @@ def create_ocp_solver() -> AcadosOcp:
     model = system_2d.export_dynamics_ode_model()
     ocp.model = model
 
-    N = 20
+    N = 40
     nx = model.x.rows()
     nu = model.u.rows()
     ny = nx + nu
@@ -80,10 +80,14 @@ def getCBF(p, v, u):
     Lfh = 2*( (p[0]-2)*v[0] + (p[1]-2)*v[1])
     h = (p[0]-2)**2 + (p[1]-2)**2 - 1
 
-    k1 = 8
+    k1 = 1
     k2 = 64
     return Lf2h + Lfghf + k1*Lfh + k2*h
+    # return h
 
+def get_h_value(p):
+    h = (p[0]-2)**2 + (p[1]-2)**2 - 1
+    return h
 def closed_loop_simulation():
 
     # Create solvers
@@ -127,7 +131,7 @@ def closed_loop_simulation():
         simU[i,:] = acados_ocp_solver.solve_for_x0(xcurrent)
         xcurrent = acados_integrator.simulate(xcurrent, simU[i,:])
         simX[i + 1,:] = xcurrent
-        # h_values[i] = acados_ocp_solver.get(j,'h')
+        h_values[i] = get_h_value(simX[i+1,:])
 
     plt.figure()
     plt.subplot(1,2,1)
@@ -149,9 +153,22 @@ def closed_loop_simulation():
     plt.grid('true')
 
     plt.figure()
-    plt.plot(simX[:,0], simX[:,1], linewidth=4)
+    plt.plot(simX[:,0], simX[:,1], linewidth=4,color='red')
+    Circle = plt.Circle((2,2),1)
+    plt.gca().add_patch(Circle)
+    plt.xlabel('x [m]', fontsize=32)
+    plt.ylabel('y [m]', fontsize=32)
+    plt.xticks([0, 1.0, 2.0, 3.0, 4.0, 5.0],fontsize=32)
+    plt.yticks([0, 1.0, 2.0, 3.0, 4.0, 5.0],fontsize=32)
+    plt.grid('true')
 
-
+    plt.figure()
+    plt.plot(np.linspace(0, T_horizon / N_horizon * Nsim, Nsim),h_values, linewidth=4)
+    plt.xlabel("Time",fontsize=32)
+    plt.ylabel("h(p)", fontsize=32)
+    plt.xticks([0,2,4,6,8],fontsize=32)
+    plt.yticks([-5, 0, 5, 10, 15, 20], fontsize=32)
+    plt.grid('true')
     plt.show()
 
 if __name__ == "__main__":

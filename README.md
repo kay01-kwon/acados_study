@@ -8,3 +8,11 @@ When executing the command above, it generates json file and
 show the figure below.
 
 <img src="figures/2d_mpc_result.png">
+
+MPC-CBF
+
+<img src="figures/2d_mpc_w_ECBF_result1.png">
+
+<img src="figures/2d_mpc_w_ECBF_result2.png">
+
+<img src="figures/2d_mpc_w_ECBF_result3.png">
