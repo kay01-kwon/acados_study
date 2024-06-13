@@ -50,15 +50,15 @@ def create_ocp_solver() -> AcadosOcp:
     ocp.cost.yref_e = np.zeros((ny_e,))
     ocp.cost.W_e = Q_mat
 
-    ocp.constraints.constraint_type = 'bgp'
     Umax = 10
     ocp.constraints.lbu = np.array([-Umax, -Umax])
     ocp.constraints.ubu = np.array([Umax, Umax])
     ocp.constraints.idxbu = np.array([0, 1])
 
-    h_expr = (ocp.model.x[0] - 2)**2 + (ocp.model.x[1] - 2)**2
+    ocp.constraints.constraint_type = 'bgp'
+    h_expr = getCBF(model.x[0:2], model.x[2:4], model.u)
     ocp.model.con_h_expr = h_expr
-    ocp.constraints.lh = np.array([0.5])
+    ocp.constraints.lh = np.array([0])
     ocp.constraints.uh = np.array([1e15])
 
     ocp.constraints.x0 = X0
@@ -73,6 +73,16 @@ def create_ocp_solver() -> AcadosOcp:
     ocp.solver_options.tf = T_horizon
 
     return ocp
+
+def getCBF(p, v, u):
+    Lf2h = 2*(v[0]**2 + v[1]**2)
+    Lfghf = 2*( (p[0]-2)*u[0] + (p[1]-2)*u[1] )
+    Lfh = 2*( (p[0]-2)*v[0] + (p[1]-2)*v[1])
+    h = (p[0]-2)**2 + (p[1]-2)**2 - 1
+
+    k1 = 8
+    k2 = 64
+    return Lf2h + Lfghf + k1*Lfh + k2*h
 
 def closed_loop_simulation():
 
@@ -91,9 +101,11 @@ def closed_loop_simulation():
 
     simX = np.zeros((Nsim + 1, nx))
     simU = np.zeros((Nsim,nu))
+    h_values = np.zeros((Nsim,1))
 
     xcurrent = X0
     simX[0,:] = xcurrent
+
 
     # p_x, p_y, v_x, v_y, u_x, u_y
     y_ref = np.array([5, 5, 0, 0, 0, 0])
@@ -115,6 +127,7 @@ def closed_loop_simulation():
         simU[i,:] = acados_ocp_solver.solve_for_x0(xcurrent)
         xcurrent = acados_integrator.simulate(xcurrent, simU[i,:])
         simX[i + 1,:] = xcurrent
+        # h_values[i] = acados_ocp_solver.get(j,'h')
 
     plt.figure()
     plt.subplot(1,2,1)
@@ -137,6 +150,7 @@ def closed_loop_simulation():
 
     plt.figure()
     plt.plot(simX[:,0], simX[:,1], linewidth=4)
+
 
     plt.show()
 
