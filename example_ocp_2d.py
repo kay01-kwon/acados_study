@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 
 # Initial state
 X0 = np.array([0.0, 0.0, 0.0, 0.0])
-T_horizon = 5.0
+T_horizon = 2.0
+r = 0.5
 
 def create_ocp_solver() -> AcadosOcp:
     # Create ocp object to formulate the OCP
@@ -78,15 +79,15 @@ def getCBF(p, v, u):
     Lf2h = 2*(v[0]**2 + v[1]**2)
     Lfghf = 2*( (p[0]-2)*u[0] + (p[1]-2)*u[1] )
     Lfh = 2*( (p[0]-2)*v[0] + (p[1]-2)*v[1])
-    h = (p[0]-2)**2 + (p[1]-2)**2 - 1
+    h = (p[0]-2)**2 + (p[1]-2)**2 - r**2
 
-    k1 = 1
+    k1 = 20
     k2 = 64
     return Lf2h + Lfghf + k1*Lfh + k2*h
     # return h
 
 def get_h_value(p):
-    h = (p[0]-2)**2 + (p[1]-2)**2 - 1
+    h = (p[0]-2)**2 + (p[1]-2)**2 - r**2
     return h
 def closed_loop_simulation():
 
@@ -154,7 +155,7 @@ def closed_loop_simulation():
 
     plt.figure()
     plt.plot(simX[:,0], simX[:,1], linewidth=4,color='red')
-    Circle = plt.Circle((2,2),1)
+    Circle = plt.Circle((2,2),r)
     plt.gca().add_patch(Circle)
     plt.xlabel('x [m]', fontsize=32)
     plt.ylabel('y [m]', fontsize=32)
