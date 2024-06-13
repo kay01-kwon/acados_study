@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Initial state
-X0 = np.array([0.0, 0.0])
+X0 = np.array([0.0, 0.0, 0.0, 0.0])
 T_horizon = 2.0
 
 def create_ocp_solver() -> AcadosOcp:
@@ -29,9 +29,9 @@ def create_ocp_solver() -> AcadosOcp:
     # OCP objective function
     # Set cost
     # cost Q: p_x,p_y, v_x, v_y
-    Q_mat = 2*np.diag([1000, 1000 ,7, 7])
+    Q_mat = 2*np.diag([1000, 1000, 700, 700])
     # cost R: u
-    R_mat = 2*5*1e-1
+    R_mat = 2*5*np.diag([1e-1, 1e-1])
 
     ocp.cost.cost_type = 'LINEAR_LS'
     ocp.cost.cost_type_e = 'LINEAR_LS'
@@ -52,11 +52,11 @@ def create_ocp_solver() -> AcadosOcp:
 
 
     Umax = 10
-    ocp.constraints.lbu = np.array([-Umax])
-    ocp.constraints.ubu = np.array([Umax])
+    ocp.constraints.lbu = np.array([-Umax, -Umax])
+    ocp.constraints.ubu = np.array([Umax, Umax])
     # ocp.constraints.lbx = np.array([-100, -1, -Umax])
     # ocp.constraints.ubx = np.array([100, 1, Umax])
-    ocp.constraints.idxbu = np.array([0])
+    ocp.constraints.idxbu = np.array([0, 1])
 
     ocp.constraints.x0 = X0
 
@@ -92,9 +92,9 @@ def closed_loop_simulation():
     xcurrent = X0
     simX[0,:] = xcurrent
 
-    # p_x, p_y, v_x, v_y, u
-    y_ref = np.array([1, 1, 0, 0, 0])
-    y_ref_N = np.array([1, 1, 0, 0])
+    # p_x, p_y, v_x, v_y, u_x, u_y
+    y_ref = np.array([1, 2, 0, 0, 0, 0])
+    y_ref_N = np.array([1, 2, 0, 0])
 
     # Initialize solver
     for stage in range(N_horizon + 1):
@@ -113,11 +113,17 @@ def closed_loop_simulation():
         xcurrent = acados_integrator.simulate(xcurrent, simU[i,:])
         simX[i + 1,:] = xcurrent
 
-    plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim+1),simX[:,0])
+    plt.subplot(1,2,1)
+    plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim + 1),simX[:,0])
+    plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim + 1),simX[:,1])
     plt.xlabel("Time")
     plt.ylabel("x [m]")
 
-    # plt.plot(simU)
+    plt.subplot(1,2,2)
+    plt.plot(np.linspace(0, T_horizon / N_horizon * Nsim, Nsim), simU[:, 0])
+    plt.plot(np.linspace(0, T_horizon / N_horizon * Nsim, Nsim), simU[:, 1])
+    plt.xlabel("Time")
+    plt.ylabel("Control input")
 
     plt.show()
 

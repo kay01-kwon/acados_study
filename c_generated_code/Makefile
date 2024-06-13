@@ -36,28 +36,28 @@
 
 # model
 MODEL_SRC=
-MODEL_SRC+= simple_system_model/simple_system_impl_dae_fun.c
-MODEL_SRC+= simple_system_model/simple_system_impl_dae_fun_jac_x_xdot_z.c
-MODEL_SRC+= simple_system_model/simple_system_impl_dae_jac_x_xdot_u_z.c
+MODEL_SRC+= system_2d_model/system_2d_impl_dae_fun.c
+MODEL_SRC+= system_2d_model/system_2d_impl_dae_fun_jac_x_xdot_z.c
+MODEL_SRC+= system_2d_model/system_2d_impl_dae_jac_x_xdot_u_z.c
 MODEL_OBJ := $(MODEL_SRC:.c=.o)
 
 # optimal control problem - mostly CasADi exports
 OCP_SRC=
 
-OCP_SRC+= acados_solver_simple_system.c
+OCP_SRC+= acados_solver_system_2d.c
 OCP_OBJ := $(OCP_SRC:.c=.o)
 
 # for sim solver
-SIM_SRC= acados_sim_solver_simple_system.c
+SIM_SRC= acados_sim_solver_system_2d.c
 SIM_OBJ := $(SIM_SRC:.c=.o)
 
 # for target example
-EX_SRC= main_simple_system.c
+EX_SRC= main_system_2d.c
 EX_OBJ := $(EX_SRC:.c=.o)
 EX_EXE := $(EX_SRC:.c=)
 
 # for target example_sim
-EX_SIM_SRC= main_sim_simple_system.c
+EX_SIM_SRC= main_sim_system_2d.c
 EX_SIM_OBJ := $(EX_SIM_SRC:.c=.o)
 EX_SIM_EXE := $(EX_SIM_SRC:.c=)
 
@@ -98,8 +98,8 @@ LDLIBS+= -lm
 LDLIBS+= 
 
 # libraries
-LIBACADOS_SOLVER=libacados_solver_simple_system.so
-LIBACADOS_OCP_SOLVER=libacados_ocp_solver_simple_system.so
+LIBACADOS_SOLVER=libacados_solver_system_2d.so
+LIBACADOS_OCP_SOLVER=libacados_ocp_solver_system_2d.so
 LIBACADOS_SIM_SOLVER=lib$(SIM_SRC:.c=.so)
 
 # virtual targets
@@ -152,7 +152,7 @@ ocp_cython: ocp_cython_o
 	-o acados_ocp_solver_pyx.so \
 	-Wl,-rpath=$(LIB_PATH) \
 	acados_ocp_solver_pyx.o \
-	$(abspath .)/libacados_ocp_solver_simple_system.so \
+	$(abspath .)/libacados_ocp_solver_system_2d.so \
 	$(LDFLAGS) $(LDLIBS)
 
 # Sim Cython targets
@@ -179,7 +179,7 @@ sim_cython: sim_cython_o
 	-o acados_sim_solver_pyx.so \
 	-Wl,-rpath=$(LIB_PATH) \
 	acados_sim_solver_pyx.o \
-	$(abspath .)/libacados_sim_solver_simple_system.so \
+	$(abspath .)/libacados_sim_solver_system_2d.so \
 	$(LDFLAGS) $(LDLIBS)
 
 clean:
@@ -192,13 +192,13 @@ clean_ocp_shared_lib:
 	$(RM) $(OCP_OBJ)
 
 clean_ocp_cython:
-	$(RM) libacados_ocp_solver_simple_system.so
-	$(RM) acados_solver_simple_system.o
+	$(RM) libacados_ocp_solver_system_2d.so
+	$(RM) acados_solver_system_2d.o
 	$(RM) acados_ocp_solver_pyx.so
 	$(RM) acados_ocp_solver_pyx.o
 
 clean_sim_cython:
-	$(RM) libacados_sim_solver_simple_system.so
-	$(RM) acados_sim_solver_simple_system.o
+	$(RM) libacados_sim_solver_system_2d.so
+	$(RM) acados_sim_solver_system_2d.o
 	$(RM) acados_sim_solver_pyx.so
 	$(RM) acados_sim_solver_pyx.o

@@ -18,11 +18,12 @@ def export_dynamics_ode_model() -> AcadosModel:
 
     u_x = cs.MX.sym('ux')
     u_y = cs.MX.sym('uy')
+    u = cs.vertcat(u_x, u_y)
 
     # xdot = d/dt[x; v]
 
-    dxdt = cs.MX.sym('dxdt')
-    dvdt = cs.MX.sym('dvdt')
+    dxdt = cs.MX.sym('dxdt',2)
+    dvdt = cs.MX.sym('dvdt',2)
 
     xdot = cs.vertcat(dxdt, dvdt)
 
