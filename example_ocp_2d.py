@@ -114,16 +114,22 @@ def closed_loop_simulation():
         simX[i + 1,:] = xcurrent
 
     plt.subplot(1,2,1)
-    plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim + 1),simX[:,0])
-    plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim + 1),simX[:,1])
-    plt.xlabel("Time")
-    plt.ylabel("x [m]")
+    plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim + 1),simX[:,0], linewidth=4)
+    plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim + 1),simX[:,1], linewidth=4)
+    plt.xlabel("Time",fontsize=32)
+    plt.ylabel("x [m]",fontsize=32)
+    plt.xticks([0,2,4,6,8],fontsize=32)
+    plt.yticks([0, 0.5, 1, 1.5, 2.0],fontsize=32)
+    plt.grid('true')
 
     plt.subplot(1,2,2)
-    plt.plot(np.linspace(0, T_horizon / N_horizon * Nsim, Nsim), simU[:, 0])
-    plt.plot(np.linspace(0, T_horizon / N_horizon * Nsim, Nsim), simU[:, 1])
-    plt.xlabel("Time")
-    plt.ylabel("Control input")
+    plt.plot(np.linspace(0, T_horizon / N_horizon * Nsim, Nsim), simU[:, 0], linewidth=4)
+    plt.plot(np.linspace(0, T_horizon / N_horizon * Nsim, Nsim), simU[:, 1], linewidth=4)
+    plt.xlabel("Time",fontsize=32)
+    plt.ylabel("Control input", fontsize=32)
+    plt.xticks([0,2,4,6,8],fontsize=32)
+    plt.yticks([-2, 0, 2, 4, 6, 8 ,10],fontsize=32)
+    plt.grid('true')
 
     plt.show()
 
