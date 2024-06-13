@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # Initial state
 X0 = np.array([0.0, 0.0, 0.0, 0.0])
-T_horizon = 2.0
+T_horizon = 1.0
 
 def create_ocp_solver() -> AcadosOcp:
     # Create ocp object to formulate the OCP
@@ -16,7 +16,7 @@ def create_ocp_solver() -> AcadosOcp:
     model = system_2d.export_dynamics_ode_model()
     ocp.model = model
 
-    N = 50
+    N = 20
     nx = model.x.rows()
     nu = model.u.rows()
     ny = nx + nu
@@ -29,7 +29,7 @@ def create_ocp_solver() -> AcadosOcp:
     # OCP objective function
     # Set cost
     # cost Q: p_x,p_y, v_x, v_y
-    Q_mat = 2*np.diag([1000, 1000, 700, 700])
+    Q_mat = 2*np.diag([10, 10, 7, 7])
     # cost R: u
     R_mat = 2*5*np.diag([1e-1, 1e-1])
 
@@ -50,13 +50,16 @@ def create_ocp_solver() -> AcadosOcp:
     ocp.cost.yref_e = np.zeros((ny_e,))
     ocp.cost.W_e = Q_mat
 
-
+    ocp.constraints.constraint_type = 'bgp'
     Umax = 10
     ocp.constraints.lbu = np.array([-Umax, -Umax])
     ocp.constraints.ubu = np.array([Umax, Umax])
-    # ocp.constraints.lbx = np.array([-100, -1, -Umax])
-    # ocp.constraints.ubx = np.array([100, 1, Umax])
     ocp.constraints.idxbu = np.array([0, 1])
+
+    h_expr = (ocp.model.x[0] - 2)**2 + (ocp.model.x[1] - 2)**2
+    ocp.model.con_h_expr = h_expr
+    ocp.constraints.lh = np.array([0.5])
+    ocp.constraints.uh = np.array([1e15])
 
     ocp.constraints.x0 = X0
 
@@ -82,7 +85,7 @@ def closed_loop_simulation():
     N_horizon = acados_ocp_solver.N
 
     # Prepare for simulation
-    Nsim = 200
+    Nsim = 100
     nx = ocp.model.x.rows()
     nu = ocp.model.u.rows()
 
@@ -93,8 +96,8 @@ def closed_loop_simulation():
     simX[0,:] = xcurrent
 
     # p_x, p_y, v_x, v_y, u_x, u_y
-    y_ref = np.array([1, 2, 0, 0, 0, 0])
-    y_ref_N = np.array([1, 2, 0, 0])
+    y_ref = np.array([5, 5, 0, 0, 0, 0])
+    y_ref_N = np.array([5, 5, 0, 0])
 
     # Initialize solver
     for stage in range(N_horizon + 1):
@@ -113,13 +116,14 @@ def closed_loop_simulation():
         xcurrent = acados_integrator.simulate(xcurrent, simU[i,:])
         simX[i + 1,:] = xcurrent
 
+    plt.figure()
     plt.subplot(1,2,1)
     plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim + 1),simX[:,0], linewidth=4)
     plt.plot(np.linspace(0, T_horizon/N_horizon*Nsim, Nsim + 1),simX[:,1], linewidth=4)
     plt.xlabel("Time",fontsize=32)
     plt.ylabel("x [m]",fontsize=32)
     plt.xticks([0,2,4,6,8],fontsize=32)
-    plt.yticks([0, 0.5, 1, 1.5, 2.0],fontsize=32)
+    plt.yticks([0, 1.0, 2.0, 3.0, 5.0],fontsize=32)
     plt.grid('true')
 
     plt.subplot(1,2,2)
@@ -130,6 +134,9 @@ def closed_loop_simulation():
     plt.xticks([0,2,4,6,8],fontsize=32)
     plt.yticks([-2, 0, 2, 4, 6, 8 ,10],fontsize=32)
     plt.grid('true')
+
+    plt.figure()
+    plt.plot(simX[:,0], simX[:,1], linewidth=4)
 
     plt.show()
 
