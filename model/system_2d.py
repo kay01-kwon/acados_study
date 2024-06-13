@@ -12,11 +12,12 @@ def export_dynamics_ode_model() -> AcadosModel:
     m = 1.
 
     # Set up states and control
-    p = cs.MX.sym('p',3)
-    v = cs.MX.sym('v',3)
+    p = cs.MX.sym('p',2)
+    v = cs.MX.sym('v',2)
     x = cs.vertcat(p, v)
 
-    u = cs.MX.sym('u')
+    u_x = cs.MX.sym('ux')
+    u_y = cs.MX.sym('uy')
 
     # xdot = d/dt[x; v]
 
@@ -26,7 +27,8 @@ def export_dynamics_ode_model() -> AcadosModel:
     xdot = cs.vertcat(dxdt, dvdt)
 
     f_expl = cs.vertcat(v,
-                     1/m*u)
+                        1/m*u_x,
+                        1/m*u_y)
 
     f_impl = xdot - f_expl
 
