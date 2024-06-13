@@ -1,0 +1,46 @@
+from acados_template import AcadosModel
+import casadi as cs
+
+def export_dynamics_ode_model() -> AcadosModel:
+
+    model_name = 'system_2d'
+
+    # dpdt = v
+    # dvdt = 1/m * u
+
+    # Mass property
+    m = 1.
+
+    # Set up states and control
+    p = cs.MX.sym('p',3)
+    v = cs.MX.sym('v',3)
+    x = cs.vertcat(p, v)
+
+    u = cs.MX.sym('u')
+
+    # xdot = d/dt[x; v]
+
+    dxdt = cs.MX.sym('dxdt')
+    dvdt = cs.MX.sym('dvdt')
+
+    xdot = cs.vertcat(dxdt, dvdt)
+
+    f_expl = cs.vertcat(v,
+                     1/m*u)
+
+    f_impl = xdot - f_expl
+
+    model = AcadosModel()
+
+    model.f_impl_expr = f_impl
+    model.f_expl_expr = f_expl
+    model.x = x
+    model.xdot = xdot
+    model.u = u
+    model.name = model_name
+
+    model.t_label = "$t$ [s]"
+    model.x_labels = ["$x$ [m]","$v$ [m/s]"]
+    model.u_label = "$u$ [N]"
+
+    return model

@@ -1,5 +1,5 @@
 from acados_template import AcadosOcp, AcadosOcpSolver, AcadosSimSolver
-from model import dynamics_ode
+from model import system_1d
 import scipy.linalg
 from utils import plot_util
 import numpy as np
@@ -13,7 +13,7 @@ def create_ocp_solver() -> AcadosOcp:
     # Create ocp object to formulate the OCP
     ocp = AcadosOcp()
 
-    model = dynamics_ode.export_dynamics_ode_model()
+    model = system_1d.export_dynamics_ode_model()
     ocp.model = model
 
     N = 50
@@ -89,8 +89,8 @@ def closed_loop_simulation():
     xcurrent = X0
     simX[0,:] = xcurrent
 
-    y_ref = np.array([20, 0, 0])
-    y_ref_N = np.array([20, 0])
+    y_ref = np.array([1, 0, 0])
+    y_ref_N = np.array([1, 0])
 
     # Initialize solver
     for stage in range(N_horizon + 1):
