@@ -56,11 +56,11 @@ def create_ocp_solver() -> AcadosOcp:
     ocp.constraints.ubu = np.array([Umax, Umax])
     ocp.constraints.idxbu = np.array([0, 1])
 
-    ocp.constraints.constraint_type = 'bgp'
-    h_expr = getCBF(model.x[0:2], model.x[2:4], model.u)
-    ocp.model.con_h_expr = h_expr
-    ocp.constraints.lh = np.array([0])
-    ocp.constraints.uh = np.array([1e15])
+    # ocp.constraints.constraint_type = 'bgp'
+    # h_expr = getCBF(model.x[0:2], model.x[2:4], model.u)
+    # ocp.model.con_h_expr = h_expr
+    # ocp.constraints.lh = np.array([0])
+    # ocp.constraints.uh = np.array([1e15])
 
     ocp.constraints.x0 = X0
 
