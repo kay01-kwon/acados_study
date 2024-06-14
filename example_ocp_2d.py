@@ -4,6 +4,7 @@ import scipy.linalg
 from utils import plot_util
 import numpy as np
 import matplotlib.pyplot as plt
+import casadi as cs
 
 # Initial state
 X0 = np.array([0.0, 0.0, 0.0, 0.0])
@@ -62,6 +63,14 @@ def create_ocp_solver() -> AcadosOcp:
     # ocp.constraints.lh = np.array([0])
     # ocp.constraints.uh = np.array([1e15])
 
+    Kappa = np.array([1.0, 1.0])
+    h_expr = get_h(model.x[0:2])
+    dhdt_expr = get_dhdt(model.x[0:2],model.x[2:4])
+    mu_expr = get_dh2dt2(model.x[0:2],model.x[2:4],model.u)
+    ocp.model.con_h_expr = mu_expr - Kappa*cs.vertcat(h_expr,dhdt_expr)
+    ocp.constraints.lh = np.array([0])
+    ocp.constraints.uh = np.array([1e15])
+
     ocp.constraints.x0 = X0
 
     # set options
@@ -75,16 +84,28 @@ def create_ocp_solver() -> AcadosOcp:
 
     return ocp
 
-def getCBF(p, v, u):
-    Lf2h = 2*(v[0]**2 + v[1]**2)
-    Lfghf = 2*( (p[0]-2)*u[0] + (p[1]-2)*u[1] )
-    Lfh = 2*( (p[0]-2)*v[0] + (p[1]-2)*v[1])
-    h = (p[0]-2)**2 + (p[1]-2)**2 - r**2
+def get_h(p):
+    h = (p[0]-2)**2 + (p[1]-2)**2
+    return h
 
-    k1 = 20
-    k2 = 64
-    return Lf2h + Lfghf + k1*Lfh + k2*h
+def get_dhdt(p,v):
+    dhdt = 2*(p[0]-2)*v[0] + (p[1]-2)*v[1]
+    return dhdt
+
+def get_dh2dt2(p, v, u):
+    # Lf2h = 2*(v[0]**2 + v[1]**2)
+    # Lfghf = 2*( (p[0]-2)*u[0] + (p[1]-2)*u[1] )
+    # Lfh = 2*( (p[0]-2)*v[0] + (p[1]-2)*v[1])
+    # h = (p[0]-2)**2 + (p[1]-2)**2 - r**2
+    #
+    # k1 = 20
+    # k2 = 64
+    # return Lf2h + Lfghf + k1*Lfh + k2*h
     # return h
+    Lf2h = 2*(v[0]**2 + v[1]**2)
+    Lgfh = 2*(p[0] - 2)*u[0] + 2*(p[1] - 2)*u[1]
+    d2hdt2 = Lf2h + Lgfh
+    return d2hdt2
 
 def get_h_value(p):
     h = (p[0]-2)**2 + (p[1]-2)**2 - r**2
