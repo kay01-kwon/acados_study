@@ -9,6 +9,7 @@ import casadi as cs
 # Initial state
 X0 = np.array([0.0, 0.0, 0.0, 0.0])
 T_horizon = 2.0
+obs_center = np.array([2.0, 2.0])
 r = 0.5
 
 def create_ocp_solver() -> AcadosOcp:
@@ -63,7 +64,7 @@ def create_ocp_solver() -> AcadosOcp:
     # ocp.constraints.lh = np.array([0])
     # ocp.constraints.uh = np.array([1e15])
 
-    Kappa = np.array([1.0, 1.0])
+    Kappa = np.array([64.0, 32.0])
     h_expr = get_h(model.x[0:2])
     dhdt_expr = get_dhdt(model.x[0:2],model.x[2:4])
     mu_expr = get_dh2dt2(model.x[0:2],model.x[2:4],model.u)
@@ -85,11 +86,11 @@ def create_ocp_solver() -> AcadosOcp:
     return ocp
 
 def get_h(p):
-    h = (p[0]-2)**2 + (p[1]-2)**2
+    h = (p[0]-obs_center[0])**2 + (p[1]-obs_center[1])**2 - r**2
     return h
 
 def get_dhdt(p,v):
-    dhdt = 2*(p[0]-2)*v[0] + (p[1]-2)*v[1]
+    dhdt = 2*(p[0]-obs_center[0])*v[0] + (p[1]-obs_center[1])*v[1]
     return dhdt
 
 def get_dh2dt2(p, v, u):
@@ -103,12 +104,12 @@ def get_dh2dt2(p, v, u):
     # return Lf2h + Lfghf + k1*Lfh + k2*h
     # return h
     Lf2h = 2*(v[0]**2 + v[1]**2)
-    Lgfh = 2*(p[0] - 2)*u[0] + 2*(p[1] - 2)*u[1]
+    Lgfh = 2*(p[0] - obs_center[0])*u[0] + 2*(p[1] - obs_center[1])*u[1]
     d2hdt2 = Lf2h + Lgfh
     return d2hdt2
 
 def get_h_value(p):
-    h = (p[0]-2)**2 + (p[1]-2)**2 - r**2
+    h = (p[0]-obs_center[0])**2 + (p[1]-obs_center[1])**2 - r**2
     return h
 def closed_loop_simulation():
 
