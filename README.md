@@ -15,11 +15,11 @@ show the figure below.
 
 ### ECBF formulation 
 The vector $\eta_{b}(x)$ can be defined as 
-$\eta_{b}(x) = 
+$`\eta_{b}(x) = 
 \begin{bmatrix}
 h(x)\\
 \dot{h}(x)
-\end{bmatrix}$
+\end{bmatrix}`$
 
 where $h(x) = (x-x_{obs})^2 + (y-y_{obs})^2$ and
 
