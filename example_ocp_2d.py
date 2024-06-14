@@ -67,7 +67,7 @@ def create_ocp_solver() -> AcadosOcp:
     h_expr = get_h(model.x[0:2])
     dhdt_expr = get_dhdt(model.x[0:2],model.x[2:4])
     mu_expr = get_dh2dt2(model.x[0:2],model.x[2:4],model.u)
-    ocp.model.con_h_expr = mu_expr - Kappa*cs.vertcat(h_expr,dhdt_expr)
+    ocp.model.con_h_expr = mu_expr + Kappa[0] * h_expr + Kappa[1] * dhdt_expr
     ocp.constraints.lh = np.array([0])
     ocp.constraints.uh = np.array([1e15])
 
