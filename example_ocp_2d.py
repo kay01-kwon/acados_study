@@ -10,7 +10,7 @@ import casadi as cs
 X0 = np.array([0.0, 0.0, 0.0, 0.0])
 T_horizon = 2.0
 obs_center = np.array([2.0, 2.0])
-r = 0.5
+r = 1
 
 def create_ocp_solver() -> AcadosOcp:
     # Create ocp object to formulate the OCP
