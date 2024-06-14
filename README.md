@@ -31,14 +31,10 @@ $L_{f}^2h(x) + L_{g}L_{f}h(x) =\mu.$
 
 It can be written as 
 
-$\begin{equation}
-\begin{split}
-\mu &= \frac{d^2h(x)}{dt^2}\\
-    &=2(\dot{x}^2 + \dot{y}^2)
+$\mu = \frac{d^2h(x)}{dt^2}
+    =2(\dot{x}^2 + \dot{y}^2)
     + 2(x-x_{obs})\ddot{x}
-    + 2(y-y_{obs})\ddot{y}.
-\end{split}
-\end{equation}$
+    + 2(y-y_{obs})\ddot{y}.$
 
 Herein, $\ddot{x}$ and $\ddot{y}$ can be represented as
 the force component like
