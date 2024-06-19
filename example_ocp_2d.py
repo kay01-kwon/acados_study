@@ -41,10 +41,7 @@ def create_ocp_solver() -> AcadosOcp:
 
     ocp.cost.Vx = np.zeros((ny, nx))
     ocp.cost.Vu = np.zeros((ny, nu))
-    ocp.cost.Vx[0,0] = 1.0
-    ocp.cost.Vx[1,1] = 1.0
-    ocp.cost.Vx[2, 2] = 1.0
-    ocp.cost.Vx[3, 3] = 1.0
+    ocp.cost.Vx[:4,:4] = np.eye(4)
 
     ocp.cost.W = scipy.linalg.block_diag(Q_mat, R_mat)
 
@@ -57,6 +54,8 @@ def create_ocp_solver() -> AcadosOcp:
     ocp.constraints.lbu = np.array([-Umax, -Umax])
     ocp.constraints.ubu = np.array([Umax, Umax])
     ocp.constraints.idxbu = np.array([0, 1])
+
+    ocp.constraints.x0 = X0
 
     # ocp.constraints.constraint_type = 'bgp'
     # h_expr = getCBF(model.x[0:2], model.x[2:4], model.u)
@@ -72,12 +71,10 @@ def create_ocp_solver() -> AcadosOcp:
     ocp.constraints.lh = np.array([0])
     ocp.constraints.uh = np.array([1e15])
 
-    ocp.constraints.x0 = X0
-
     # set options
-    ocp.solver_options.qp_solver = "FULL_CONDENSING_HPIPM"  # FULL_CONDENSING_QPOASES
+    ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"  # FULL_CONDENSING_QPOASES
     ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
-    ocp.solver_options.integrator_type = "IRK"
+    ocp.solver_options.integrator_type = "ERK"
     ocp.solver_options.nlp_solver_type = "SQP_RTI"
 
     # set prediction horizon
@@ -144,14 +141,18 @@ def closed_loop_simulation():
     for stage in range(N_horizon):
         acados_ocp_solver.set(stage, "u",np.zeros((nu,)))
 
+    xcurrent = np.array([0, 0, 0, 0])
     # Closed loop
     for i in range(Nsim):
 
         for j in range(N_horizon):
             acados_ocp_solver.set(j,"y_ref", y_ref)
+            acados_ocp_solver.set(j, "p", xcurrent[:2])
         acados_ocp_solver.set(N_horizon, "y_ref", y_ref_N)
+        acados_ocp_solver.set(N_horizon, "p", xcurrent[:2])
 
-        simU[i,:] = acados_ocp_solver.solve_for_x0(xcurrent)
+
+        simU[i,:] = acados_ocp_solver.solve()
         xcurrent = acados_integrator.simulate(xcurrent, simU[i,:])
         simX[i + 1,:] = xcurrent
         h_values[i] = get_h_value(simX[i+1,:])
