@@ -119,7 +119,7 @@ def closed_loop_simulation():
     N_horizon = acados_ocp_solver.N
 
     # Prepare for simulation
-    Nsim = 100
+    Nsim = 80
     nx = ocp.model.x.rows()
     nu = ocp.model.u.rows()
 
@@ -129,7 +129,6 @@ def closed_loop_simulation():
 
     xcurrent = X0
     simX[0,:] = xcurrent
-
 
     # p_x, p_y, v_x, v_y, u_x, u_y
     y_ref = np.array([5, 5, 0, 0, 0, 0])
@@ -148,9 +147,13 @@ def closed_loop_simulation():
             acados_ocp_solver.set(j,"y_ref", y_ref)
         acados_ocp_solver.set(N_horizon, "y_ref", y_ref_N)
 
-        simU[i,:] = acados_ocp_solver.solve_for_x0(xcurrent)
+        # simU[i,:] = acados_ocp_solver.solve_for_x0(xcurrent)
+        status = acados_ocp_solver.solve()
+        simU[i,:] = acados_ocp_solver.get(0,"u")
         xcurrent = acados_integrator.simulate(xcurrent, simU[i,:])
 
+        acados_ocp_solver.set(0, "lbx", xcurrent)
+        acados_ocp_solver.set(0, "ubx", xcurrent)
         simX[i + 1,:] = xcurrent
         h_values[i] = get_h_value(simX[i+1,:])
 
