@@ -72,7 +72,7 @@ def create_ocp_solver() -> AcadosOcp:
     ocp.constraints.uh = np.array([1e15])
 
     # set options
-    ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"  # FULL_CONDENSING_QPOASES
+    ocp.solver_options.qp_solver = "FULL_CONDENSING_HPIPM"  # FULL_CONDENSING_QPOASES
     ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
     ocp.solver_options.integrator_type = "ERK"
     ocp.solver_options.nlp_solver_type = "SQP_RTI"
@@ -141,19 +141,16 @@ def closed_loop_simulation():
     for stage in range(N_horizon):
         acados_ocp_solver.set(stage, "u",np.zeros((nu,)))
 
-    xcurrent = np.array([0, 0, 0, 0])
     # Closed loop
     for i in range(Nsim):
 
         for j in range(N_horizon):
             acados_ocp_solver.set(j,"y_ref", y_ref)
-            acados_ocp_solver.set(j, "p", xcurrent[:2])
         acados_ocp_solver.set(N_horizon, "y_ref", y_ref_N)
-        acados_ocp_solver.set(N_horizon, "p", xcurrent[:2])
 
-
-        simU[i,:] = acados_ocp_solver.solve()
+        simU[i,:] = acados_ocp_solver.solve_for_x0(xcurrent)
         xcurrent = acados_integrator.simulate(xcurrent, simU[i,:])
+
         simX[i + 1,:] = xcurrent
         h_values[i] = get_h_value(simX[i+1,:])
 
