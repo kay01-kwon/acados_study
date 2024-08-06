@@ -1,8 +1,8 @@
 from acados_template import AcadosModel
 import casadi as cs
 
-class SImpleModel:
-    def __init__(self):
+class SimpleModel:
+    def __init__(self, mass = 2):
         '''
         Constructor method for SImpleModel
         '''
@@ -11,7 +11,7 @@ class SImpleModel:
 
         self.model = AcadosModel()
 
-        self.m = 2
+        self.m = mass
 
         self.p = cs.MX.sym('p',1)
         self.v = cs.MX.sym('v',1)
