@@ -3,7 +3,7 @@ import scipy.linalg
 from acados_template import AcadosOcpSolver, AcadosOcp
 from model.mhe_simple_model import MheSimpleModel
 import casadi as cs
-from scipy.linalg
+
 class MheSolverForSimpleSystem:
     def __init__(self, N, Tf, Q, R, R0):
         '''
