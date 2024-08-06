@@ -37,15 +37,16 @@ class MheSimpleModel:
 
     def get_acados_model(self):
 
-        self.f_expl = cs.vertcat(self.p_kinematics(), self.v_dynamcis(), 0)
+        self.f_expl = cs.vertcat(self.p_kinematics(), self.v_dynamics(), 0)
         self.f_impl = cs.vertcat(self.dpdt, self.dvdt, self.dmdt)
 
         # Add state noise
-        # self.model.f_expl = self.f_expl + self.w
-        self.model.f_expl = self.f_expl
+        self.model.f_expl = self.f_expl + self.w
+        # self.model.f_expl = self.f_expl
         self.model.f_impl = self.f_impl
 
         self.model.x = self.x
+        self.model.u = self.w
         self.model.xdot = self.xdot
         self.model.p = self.param
 

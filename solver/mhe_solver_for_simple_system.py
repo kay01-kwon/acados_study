@@ -39,7 +39,7 @@ class MheSolverForSimpleSystem:
 
         self.ocp_mhe.parameter_values = np.zeros((self.nparam,))
 
-        self.set_ocp_cost()
+        self.set_ocp_cost(Q, R, R0)
 
         self.set_ocp_solver()
 
@@ -48,54 +48,42 @@ class MheSolverForSimpleSystem:
         self.acados_mhe_solver.cost_set(0, "W", scipy.linalg.block_diag(Q, R, R0))
 
 
-        def set_ocp_cost(self):
-            # Setup weight for cost
+    def set_ocp_cost(self, Q, R, R0):
+        # Setup weight for cost
 
-            # 1. Vx weight (Lagrangian term)
-            self.ocp_mhe.cost.Vx = np.zeros((self.ny, self.nx))
-            self.ocp_mhe.cost.Vx[:self.nx, :self.nx] = np.eye(self.nx)
+        # 1. Vx weight (Lagrangian term)
+        self.ocp_mhe.cost.Vx = np.zeros((self.ny, self.nx))
+        self.ocp_mhe.cost.Vx[:self.nx, :self.nx] = np.eye(self.nx)
 
-            # 2. Vx (Mayer term)
-            self.ocp_mhe.cost.Vx_e = np.zeros((self.nx,))
-            self.ocp_mhe.cost.Vx_e = np.eye(self.nx, )
+        # 2. Vx (Mayer term)
+        self.ocp_mhe.cost.Vx_e = np.zeros((self.nx,))
+        self.ocp_mhe.cost.Vx_e = np.eye(self.nx)
 
-            # 3. Vu weight
-            self.ocp_mhe.cost.Vu = np.zeros((self.ny, self.nu))
-            self.ocp_mhe.cost.Vu[-self.nu:, -self.nu:] = np.eye(self.nu)
+        # 3. Vu weight
+        self.ocp_mhe.cost.Vu = np.zeros((self.ny, self.nu))
+        self.ocp_mhe.cost.Vu[-self.nu:, -self.nu:] = np.eye(self.nu)
 
-            # 4. Weight for state cost
-            self.ocp_mhe.cost.W_0 = scipy.linalg.block_diag(Q, R, R0)
-            self.ocp_mhe.cost.W = scipy.linalg.block_diag(Q, R)
+        # 4. Weight for state cost
+        self.ocp_mhe.cost.W_0 = scipy.linalg.block_diag(Q, R, R0)
+        self.ocp_mhe.cost.W = scipy.linalg.block_diag(Q, R)
 
-            self.ocp_mhe.cost.yref = np.zeros((self.ny,))
-            self.ocp_mhe.cost.yref_e = np.zeros((self.ny_e,))
-            self.ocp_mhe.cost.yref_0 = np.zeros((self.ny_0,))
+        self.ocp_mhe.cost.yref = np.zeros((self.ny,))
+        self.ocp_mhe.cost.yref_e = np.zeros((self.ny_e,))
+        self.ocp_mhe.cost.yref_0 = np.zeros((self.ny_0,))
 
-        def set_ocp_solver(self):
+    def set_ocp_solver(self):
 
-            # Set QP solver
-            self.ocp_mhe.solver.options.qp_solver = 'FULL_CONDENSING_QPOASES'
-            self.ocp_mhe.solver.options.hessian_approx = 'GAUSS_NEWTON'
-            self.ocp_mhe.solver.options.integrator_type = 'ERK'
+        # Set QP solver
+        self.ocp_mhe.solver.options.qp_solver = 'FULL_CONDENSING_QPOASES'
+        self.ocp_mhe.solver.options.hessian_approx = 'GAUSS_NEWTON'
+        self.ocp_mhe.solver.options.integrator_type = 'ERK'
 
-            self.ocp_mhe.solver.options.nlp_solver_type = 'SQP'
-            self.ocp_mhe.solver.options.nlp_solver_max_iter = 200
+        self.ocp_mhe.solver.options.nlp_solver_type = 'SQP'
+        self.ocp_mhe.solver.options.nlp_solver_max_iter = 200
 
-            # Set prediction horizon
-            self.ocp_mhe.solver.options.tf = self.Tf
+        # Set prediction horizon
+        self.ocp_mhe.solver.options.tf = self.Tf
 
-        def get_ocp_solver(self):
+    def get_ocp_solver(self):
 
-            return self.acados_mhe_solver
-
-
-
-
-
-
-
-
-
-
-
-
+        return self.acados_mhe_solver
