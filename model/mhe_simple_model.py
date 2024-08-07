@@ -40,7 +40,7 @@ class MheSimpleModel:
 
         # Add state noise
         self.acados_model.f_expl_expr = self.f_expl + self.w
-        self.acados_model.f_impl_expr = self.f_impl
+        self.acados_model.f_impl_expr = self.xdot - self.f_impl
 
         self.acados_model.x = self.x
         self.acados_model.u = self.w

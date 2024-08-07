@@ -43,6 +43,9 @@ class MheSolverForSimpleSystem:
 
         self.set_ocp_solver()
 
+        # set arrival cost weighting matrix
+        self.acados_mhe_solver.cost_set(0, "W", scipy.linalg.block_diag(R, Q, Q0))
+
 
     def set_ocp_cost(self, Q, Q0, R):
         # Setup weight for cost
