@@ -37,4 +37,4 @@ if __name__ == "__main__":
     R = np.diag([0, 0, 0])
     R0 = R
 
-    mhe_solver = MheSolverForSimpleSystem(N, Tf, Q, R, R0)
+    mhe_solver_obj = MheSolverForSimpleSystem(N, Tf, Q, R, R0)

@@ -26,7 +26,6 @@ class MheSimpleModel:
 
         # Control input declartaion (Pararmeter to pass)
         self.F = cs.MX.sym('F')
-        self.param = self.F
 
         # dxdt declaration
         self.dpdt = cs.MX.sym('dpdt',1)
@@ -42,7 +41,6 @@ class MheSimpleModel:
 
         # Add state noise
         self.model.f_expl = self.f_expl + self.w
-
         self.model.f_impl = self.f_impl
 
         self.model.x = self.x
@@ -60,5 +58,5 @@ class MheSimpleModel:
 
     def v_dynamics(self):
 
-        return self.p/self.m
+        return self.F/self.m
 
