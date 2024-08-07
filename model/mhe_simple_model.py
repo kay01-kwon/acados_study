@@ -10,7 +10,7 @@ class MheSimpleModel:
         '''
         self.model_name = "MheSimpleModel"
 
-        self.model = AcadosModel()
+        self.acados_model = AcadosModel()
 
         # State variables declaration
         self.p = cs.MX.sym('p', 1)
@@ -40,17 +40,17 @@ class MheSimpleModel:
         self.f_impl = cs.vertcat(self.dpdt, self.dvdt, self.dmdt)
 
         # Add state noise
-        self.model.f_expl = self.f_expl + self.w
-        self.model.f_impl = self.f_impl
+        self.acados_model.f_expl_expr = self.f_expl + self.w
+        self.acados_model.f_impl_expr = self.f_impl
 
-        self.model.x = self.x
-        self.model.u = self.w
-        self.model.xdot = self.xdot
-        self.model.p = self.param
+        self.acados_model.x = self.x
+        self.acados_model.u = self.w
+        self.acados_model.xdot = self.xdot
+        self.acados_model.p = self.F
 
-        self.model.model_name = self.model_name
+        self.acados_model.model_name = self.model_name
 
-        return self.model
+        return self.acados_model
 
     def p_kinematics(self):
 

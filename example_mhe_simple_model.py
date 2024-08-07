@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.integrate import odeint
 from solver.mhe_solver_for_simple_system import MheSolverForSimpleSystem
+from model.mhe_simple_model import MheSimpleModel
 import matplotlib.pyplot as plt
 
 def dynamics_of_simple_system(x, t, F):
@@ -31,10 +32,23 @@ if __name__ == "__main__":
     # plt.show()
 
     N = 10
-    Tf = 10
+    time_horizon = float(1.0)
 
     Q = np.diag([1, 1, 1])
     R = np.diag([0, 0, 0])
     R0 = R
 
-    mhe_solver_obj = MheSolverForSimpleSystem(N, Tf, Q, R, R0)
+    # acados_model = MheSimpleModel().get_acados_model()
+    #
+    # print(acados_model.model_name)
+    # print(acados_model.x)
+    # print(acados_model.u)
+    #
+    # print(acados_model.f_expl_expr)
+    #
+    # print(acados_model.p)
+    #
+    # print(acados_model.xdot)
+
+
+    mhe_solver_obj = MheSolverForSimpleSystem(N, time_horizon, Q, R, R0)
