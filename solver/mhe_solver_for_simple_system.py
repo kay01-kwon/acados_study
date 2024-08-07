@@ -25,8 +25,8 @@ class MheSolverForSimpleSystem:
         self.nx = self.ocp_mhe.model.x.rows()
         self.nu = self.ocp_mhe.model.u.rows()
 
-        self.ny_0 = 3*self.nx   # state, noise, Arrival cost
-        self.ny = 2*self.nx                   # state, noise
+        self.ny_0 = self.nx + self.nu + self.nx         # state, noise, Arrival cost
+        self.ny = self.nx + self.nu                     # state, noise
         self.ny_e = 0
 
         self.nparam = self.ocp_mhe.model.p.rows()
@@ -35,35 +35,35 @@ class MheSolverForSimpleSystem:
         self.ocp_mhe.dims.N = N
 
         self.ocp_mhe.cost.cost_type = 'LINEAR_LS'       # Linear least square
-        # self.ocp_mhe.cost.cost_type_e = 'LINEAR_LS'     # Linear least square
-        # self.ocp_mhe.cost.cost_type_0 = 'LINEAR_LS'     # Linear least square
+        self.ocp_mhe.cost.cost_type_0 = 'LINEAR_LS'     # Linear least square
 
         self.ocp_mhe.parameter_values = np.zeros((self.nparam,))
 
-        self.set_ocp_cost(Q, R, R0)
-
-        # self.acados_mhe_solver.cost_set(0, "W", scipy.linalg.block_diag(Q, R, R0))
+        self.set_ocp_cost(Q, Q0, R)
 
         self.set_ocp_solver()
 
 
-    def set_ocp_cost(self, Q, R, R0):
+    def set_ocp_cost(self, Q, Q0, R):
         # Setup weight for cost
 
-        # 1. Vx weight (Lagrangian term)
+        # 1. Initial stage
+        self.ocp_mhe.cost.Vx_0 = np.zeros((self.ny_0, self.nx))
+        self.ocp_mhe.cost.Vx_0[:self.nx,:] = np.eye(self.nx)
+        self.ocp_mhe.cost.Vx_0[self.nx:2*self.nx,:] = np.eye(self.nx)
+
+        self.ocp_mhe.cost.Vu_0 = np.zeros((self.ny_0, self.nu))
+        self.ocp_mhe.cost.Vu_0[self.nx:self.nx+self.nu,:] = np.eye(self.nu)
+
+        self.ocp_mhe.cost.W_0 = scipy.linalg.block_diag(Q, R, Q0)
+
+        # 2. Intermidiate stage (Lagrange term)
         self.ocp_mhe.cost.Vx = np.zeros((self.ny, self.nx))
         self.ocp_mhe.cost.Vx[:self.nx, :self.nx] = np.eye(self.nx)
-
-        # 2. Vx (Mayer term)
-        # self.ocp_mhe.cost.Vx_e = np.zeros((self.nx, self.nx))
-        # self.ocp_mhe.cost.Vx_e = np.eye(self.nx)
-
-        # 3. Vu weight
         self.ocp_mhe.cost.Vu = np.zeros((self.ny, self.nu))
         self.ocp_mhe.cost.Vu[-self.nu:, -self.nu:] = np.eye(self.nu)
 
         # 4. Weight for state cost
-        # self.ocp_mhe.cost.W_0 = scipy.linalg.block_diag(Q, R, R0)
         self.ocp_mhe.cost.W = scipy.linalg.block_diag(Q, R)
 
         self.ocp_mhe.cost.yref = np.zeros((self.ny,))

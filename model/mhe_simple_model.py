@@ -17,7 +17,6 @@ class MheSimpleModel:
         self.v = cs.MX.sym('v', 1)
         self.m = cs.MX.sym('m', 1)
         self.x = cs.vertcat(self.p, self.v, self.m)
-        self.x_dim = 3      # position, velocity, and mass
 
         self.w_p = cs.MX.sym('w_p', 1)
         self.w_v = cs.MX.sym('w_v', 1)
