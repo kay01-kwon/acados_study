@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # plt.show()
 
     N = 10
-    time_horizon = float(1.0)
+    time_horizon = 1.0
 
     Q = np.diag([1, 1, 1])
     R = np.diag([0, 0, 0])

@@ -48,7 +48,7 @@ class MheSimpleModel:
         self.acados_model.xdot = self.xdot
         self.acados_model.p = self.F
 
-        self.acados_model.model_name = self.model_name
+        self.acados_model.name = self.model_name
 
         return self.acados_model
 
