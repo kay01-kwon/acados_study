@@ -34,9 +34,9 @@ if __name__ == "__main__":
     N = 10
     time_horizon = 1.0
 
-    Q = np.diag([1, 1, 1])
-    R = np.diag([0, 0, 0])
-    R0 = R
+    Q = np.diag([0.1, 0.1, 1])
+    Q0 = np.diag([0.1, 0.1, 1])
+    R = np.diag([0.1, 0.1])
 
     # acados_model = MheSimpleModel().get_acados_model()
     #
@@ -51,4 +51,4 @@ if __name__ == "__main__":
     # print(acados_model.xdot)
 
 
-    mhe_solver_obj = MheSolverForSimpleSystem(N, time_horizon, Q, R, R0)
+    mhe_solver_obj = MheSolverForSimpleSystem(N, time_horizon, Q, Q0, R)

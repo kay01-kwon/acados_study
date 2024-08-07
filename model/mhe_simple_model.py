@@ -20,7 +20,8 @@ class MheSimpleModel:
 
         self.w_p = cs.MX.sym('w_p', 1)
         self.w_v = cs.MX.sym('w_v', 1)
-        self.w = cs.vertcat(self.w_p, self.w_v)
+        self.w_m = cs.MX.sym('w_m',1)
+        self.w = cs.vertcat(self.w_p, self.w_v, self.w_m)
 
         # Control input declartaion (Pararmeter to pass)
         self.F = cs.MX.sym('F')
