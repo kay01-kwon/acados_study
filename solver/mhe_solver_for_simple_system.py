@@ -5,7 +5,7 @@ from model.mhe_simple_model import MheSimpleModel
 import casadi as cs
 
 class MheSolverForSimpleSystem:
-    def __init__(self, N, tf, Q, R, R0):
+    def __init__(self, N, tf, Q, Q0, R):
         '''
         :param N: Number of shooting nodes
         :param tf: prediction horizon
@@ -25,7 +25,7 @@ class MheSolverForSimpleSystem:
         self.nx = self.ocp_mhe.model.x.rows()
         self.nu = self.ocp_mhe.model.u.rows()
 
-        # self.ny_0 = 2*self.nx   # state, noise, Arrival cost
+        self.ny_0 = 3*self.nx   # state, noise, Arrival cost
         self.ny = 2*self.nx                   # state, noise
         self.ny_e = 0
 
