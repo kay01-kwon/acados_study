@@ -16,19 +16,19 @@ class MheSolverForSimpleSystem:
 
         self.ocp_mhe = AcadosOcp()
 
-        self.ocp_mhe.model = MheSimpleModel().get_acados_model()
+        self.ocp_mhe_model = MheSimpleModel().get_acados_model()
 
         self.Tf = Tf
 
         # Dimension info
-        self.nx_augmented = self.ocp_mhe.model.x.rows()
-        self.nparam = self.ocp_mhe.model.p.rows()
-        self.nx = self.nx_augmented-1
-        self.ny = Q.shape[0] + R.shape[0]                   # state, noise
-        self.nu = self.ocp_mhe.model.u.rows()
-        self.ny_e = 0
-        self.ny_0 = Q.shape[0] + R.shape[0] + R0.shape[0]   # state, noise, Arrival cost
+        self.nx = self.ocp_mhe_model.x.rows()
+        self.nu = self.ocp_mhe_model.u.rows()
 
+        self.ny_0 = 2*self.nx   # state, noise, Arrival cost
+        self.ny = 2*self.nx                   # state, noise
+        self.ny_e = 0
+
+        self.nparam = self.ocp_mhe_model.p.rows()
         # Set the number of shooting nodes
 
         self.ocp_mhe.dims.N = N
@@ -41,11 +41,11 @@ class MheSolverForSimpleSystem:
 
         self.set_ocp_cost(Q, R, R0)
 
-        self.set_ocp_solver()
-
         self.acados_mhe_solver = AcadosOcpSolver(self.ocp_mhe)
 
-        self.acados_mhe_solver.cost_set(0, "W", scipy.linalg.block_diag(Q, R, R0))
+        # self.acados_mhe_solver.cost_set(0, "W", scipy.linalg.block_diag(Q, R, R0))
+
+        self.set_ocp_solver()
 
 
     def set_ocp_cost(self, Q, R, R0):
@@ -56,7 +56,7 @@ class MheSolverForSimpleSystem:
         self.ocp_mhe.cost.Vx[:self.nx, :self.nx] = np.eye(self.nx)
 
         # 2. Vx (Mayer term)
-        self.ocp_mhe.cost.Vx_e = np.zeros((self.nx,))
+        self.ocp_mhe.cost.Vx_e = np.zeros((self.nx, self.nx))
         self.ocp_mhe.cost.Vx_e = np.eye(self.nx)
 
         # 3. Vu weight
@@ -74,15 +74,15 @@ class MheSolverForSimpleSystem:
     def set_ocp_solver(self):
 
         # Set QP solver
-        self.ocp_mhe.solver.options.qp_solver = 'FULL_CONDENSING_QPOASES'
-        self.ocp_mhe.solver.options.hessian_approx = 'GAUSS_NEWTON'
-        self.ocp_mhe.solver.options.integrator_type = 'ERK'
+        self.acados_mhe_solver.options.qp_solver = 'FULL_CONDENSING_QPOASES'
+        self.acados_mhe_solver.options.hessian_approx = 'GAUSS_NEWTON'
+        self.acados_mhe_solver.options.integrator_type = 'ERK'
 
-        self.ocp_mhe.solver.options.nlp_solver_type = 'SQP'
-        self.ocp_mhe.solver.options.nlp_solver_max_iter = 200
+        self.acados_mhe_solver.options.nlp_solver_type = 'SQP'
+        self.acados_mhe_solver.options.nlp_solver_max_iter = 200
 
         # Set prediction horizon
-        self.ocp_mhe.solver.options.tf = self.Tf
+        self.acados_mhe_solver.options.tf = self.Tf
 
     def get_ocp_solver(self):
 

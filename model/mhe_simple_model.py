@@ -42,7 +42,7 @@ class MheSimpleModel:
 
         # Add state noise
         self.model.f_expl = self.f_expl + self.w
-        # self.model.f_expl = self.f_expl
+
         self.model.f_impl = self.f_impl
 
         self.model.x = self.x
