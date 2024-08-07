@@ -8,7 +8,7 @@ class MheSimpleModel:
         u = m * dxdt
         Guess m!
         '''
-        self.model_name = "MheSimpleModel"
+        self.model_name = "mhe_simple_model"
 
         self.acados_model = AcadosModel()
 

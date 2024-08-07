@@ -15,6 +15,7 @@ class MheSolverForSimpleSystem:
         '''
 
         self.ocp_mhe = AcadosOcp()
+        self.acados_mhe_solver = []
 
         self.ocp_mhe.model = MheSimpleModel().get_acados_model()
 
@@ -41,7 +42,6 @@ class MheSolverForSimpleSystem:
 
         self.set_ocp_cost(Q, R, R0)
 
-        self.acados_mhe_solver = AcadosOcpSolver(self.ocp_mhe)
         # self.acados_mhe_solver.cost_set(0, "W", scipy.linalg.block_diag(Q, R, R0))
 
         self.set_ocp_solver()
@@ -73,15 +73,17 @@ class MheSolverForSimpleSystem:
     def set_ocp_solver(self):
 
         # Set QP solver
-        self.acados_mhe_solver.options.qp_solver = 'FULL_CONDENSING_QPOASES'
-        self.acados_mhe_solver.options.hessian_approx = 'GAUSS_NEWTON'
-        self.acados_mhe_solver.options.integrator_type = 'ERK'
+        self.ocp_mhe.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
+        self.ocp_mhe.solver_options.hessian_approx = 'GAUSS_NEWTON'
+        self.ocp_mhe.solver_options.integrator_type = 'ERK'
 
-        self.acados_mhe_solver.options.nlp_solver_type = 'SQP'
-        self.acados_mhe_solver.options.nlp_solver_max_iter = 200
+        self.ocp_mhe.solver_options.nlp_solver_type = 'SQP'
+        self.ocp_mhe.solver_options.nlp_solver_max_iter = 200
 
         # Set prediction horizon
-        self.acados_mhe_solver.options.tf = self.tf
+        self.ocp_mhe.solver_options.tf = self.tf
+
+        self.acados_mhe_solver = AcadosOcpSolver(self.ocp_mhe)
 
     def get_ocp_solver(self):
 
