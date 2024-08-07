@@ -38,17 +38,4 @@ if __name__ == "__main__":
     Q0 = np.diag([0.1, 0.1, 1])
     R = np.diag([0.1, 0.1])
 
-    # acados_model = MheSimpleModel().get_acados_model()
-    #
-    # print(acados_model.model_name)
-    # print(acados_model.x)
-    # print(acados_model.u)
-    #
-    # print(acados_model.f_expl_expr)
-    #
-    # print(acados_model.p)
-    #
-    # print(acados_model.xdot)
-
-
-    mhe_solver_obj = MheSolverForSimpleSystem(N, time_horizon, Q, Q0, R)
+    mhe_solver = MheSolverForSimpleSystem(N, time_horizon, Q, Q0, R).get_ocp_solver()

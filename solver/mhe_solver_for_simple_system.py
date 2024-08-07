@@ -25,8 +25,8 @@ class MheSolverForSimpleSystem:
         self.nx = self.ocp_mhe.model.x.rows()
         self.nu = self.ocp_mhe.model.u.rows()
 
-        self.ny_0 = self.nx + self.nu + self.nx         # state, noise, Arrival cost
-        self.ny = self.nx + self.nu                     # state, noise
+        self.ny_0 = 2 + 2*self.nx         # state, noise, Arrival cost
+        self.ny = 2 + self.nx                     # state, noise
         self.ny_e = 0
 
         self.nparam = self.ocp_mhe.model.p.rows()
@@ -55,7 +55,9 @@ class MheSolverForSimpleSystem:
         self.ocp_mhe.cost.Vu_0 = np.zeros((self.ny_0, self.nu))
         self.ocp_mhe.cost.Vu_0[self.nx:self.nx+self.nu,:] = np.eye(self.nu)
 
-        self.ocp_mhe.cost.W_0 = scipy.linalg.block_diag(Q, R, Q0)
+        self.ocp_mhe.cost.W_0 = scipy.linalg.block_diag(R, Q, Q0)
+
+        self.ocp_mhe.cost.yref_0 = np.zeros((self.ny_0,))
 
         # 2. Intermidiate stage (Lagrange term)
         self.ocp_mhe.cost.Vx = np.zeros((self.ny, self.nx))
@@ -64,11 +66,9 @@ class MheSolverForSimpleSystem:
         self.ocp_mhe.cost.Vu[-self.nu:, -self.nu:] = np.eye(self.nu)
 
         # 4. Weight for state cost
-        self.ocp_mhe.cost.W = scipy.linalg.block_diag(Q, R)
+        self.ocp_mhe.cost.W = scipy.linalg.block_diag(R, Q)
 
         self.ocp_mhe.cost.yref = np.zeros((self.ny,))
-        # self.ocp_mhe.cost.yref_e = np.zeros((self.ny_e,))
-        # self.ocp_mhe.cost.yref_0 = np.zeros((self.ny_0,))
 
     def set_ocp_solver(self):
 
