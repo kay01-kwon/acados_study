@@ -5,7 +5,7 @@ from model.mhe_simple_model import MheSimpleModel
 import matplotlib.pyplot as plt
 
 def dynamics_of_simple_system(x, t, F):
-    mass = 1
+    mass = 0.1
     A = np.array([[0, 1], [0, 0]])
     B = np.array([0, 1])
     u = F/mass
@@ -22,9 +22,9 @@ if __name__ == "__main__":
     dt = 0.01
     t = np.arange(0, Tf + dt, dt)
 
-    F = 10.0
+    F = 1
 
-    v_stds = [0., 0.]
+    v_stds = [0.01, 0.01]
 
     x = odeint(dynamics_of_simple_system, x0, t, args=(F,))
 
@@ -43,9 +43,9 @@ if __name__ == "__main__":
 
     time_horizon = Tf
 
-    Q0 = np.diag([0.1, 0.1, 0.01])
+    Q0 = np.diag([0.01, 0.01, 100])
     Q = np.diag([0.01, 0.01, 0.01])
-    R = np.diag([100, 100])
+    R = np.diag([2, 2])
 
     acados_solver_mhe = MheSolverForSimpleSystem(N, time_horizon, Q, Q0, R).get_ocp_solver()
 
@@ -78,9 +78,11 @@ if __name__ == "__main__":
     # solve mhe problem
     status = acados_solver_mhe.solve()
 
+    print(status)
+
     x_est = np.zeros((N, dim_x))
     m_est = np.zeros((N,1))
-    noise_est = np.zeros((N,3))
+    noise_est = np.zeros((N,2))
 
     # get solution
     for i in range(N):
@@ -90,6 +92,18 @@ if __name__ == "__main__":
         m_est[i, :] = x_augmented[2]
         noise_est[i, :] = acados_solver_mhe.get(i, "u")
 
+
+    plt.figure(1)
+    plt.subplot(3,1,1)
+    plt.plot(t, x_noise[:,0],marker="*", label="noise")
+    plt.plot(t, x_est[:,0])
+
+    plt.subplot(3,1,2)
+    plt.plot(t, x_noise[:,1],marker='*')
+    plt.plot(t,x_est[:,1])
+
+    plt.subplot(3,1,3)
+    plt.plot(t, m_est)
 
     # plt.plot(t, x_est[:,0])
     # plt.plot(t, x[:,0])

@@ -20,8 +20,7 @@ class MheSimpleModel:
 
         self.w_p = cs.MX.sym('w_p', 1)
         self.w_v = cs.MX.sym('w_v', 1)
-        self.w_m = cs.MX.sym('w_m',1)
-        self.w = cs.vertcat(self.w_p, self.w_v, self.w_m)
+        self.w = cs.vertcat(self.w_p, self.w_v)
 
         # Control input declartaion (Pararmeter to pass)
         self.F = cs.MX.sym('F')
@@ -36,10 +35,11 @@ class MheSimpleModel:
     def get_acados_model(self):
 
         self.f_expl = cs.vertcat(self.p_kinematics(), self.v_dynamics(), 0)
+        self.f_expl[0:2] = self.f_expl[0:2] + self.w
         self.f_impl = cs.vertcat(self.dpdt, self.dvdt, self.dmdt)
 
         # Add state noise
-        self.acados_model.f_expl_expr = self.f_expl + self.w
+        self.acados_model.f_expl_expr = self.f_expl
         self.acados_model.f_impl_expr = self.xdot - self.f_impl
 
         self.acados_model.x = self.x

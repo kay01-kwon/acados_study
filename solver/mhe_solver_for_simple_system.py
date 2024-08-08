@@ -76,7 +76,7 @@ class MheSolverForSimpleSystem:
     def set_ocp_solver(self):
 
         # Set QP solver
-        self.ocp_mhe.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
+        self.ocp_mhe.solver_options.qp_solver = 'FULL_CONDENSING_HPIPM'
         self.ocp_mhe.solver_options.hessian_approx = 'GAUSS_NEWTON'
         self.ocp_mhe.solver_options.integrator_type = 'ERK'
 
