@@ -18,13 +18,22 @@ if __name__ == "__main__":
 
     x0 = np.array([0, 0])
 
-    Tf = 1.0
+    Tf = 2.0
     dt = 0.01
     t = np.arange(0, Tf + dt, dt)
 
-    F = 1
+    N = t.shape[0]
+    x = np.zeros((N,2))
 
-    v_stds = [0.01, 0.01]
+    F = 0.1
+
+    F_vec = np.zeros((N,1))
+
+    v_stds = [0.1, 0.1]
+
+    for i in range(N):
+        F_vec[i] = F*np.sin(t[i])
+        x[i,:] = odeint(dynamics_of_simple_system, x0, t[i:i+1], args=(F_vec[i], ))
 
     x = odeint(dynamics_of_simple_system, x0, t, args=(F,))
 
@@ -43,13 +52,13 @@ if __name__ == "__main__":
 
     time_horizon = Tf
 
-    Q0 = np.diag([0.01, 0.01, 100])
+    Q0 = np.diag([0.01, 0.01, 1])
     Q = np.diag([0.01, 0.01, 0.01])
-    R = np.diag([2, 2])
+    R = np.diag([10, 10])
 
     acados_solver_mhe = MheSolverForSimpleSystem(N, time_horizon, Q, Q0, R).get_ocp_solver()
 
-    x0_bar = np.array([0, 0, 0.8])
+    x0_bar = np.array([0, 0, 0.1])
 
     yref_0 = np.zeros((8,))
 
@@ -57,7 +66,7 @@ if __name__ == "__main__":
     yref_0[5:] = x0_bar
 
     acados_solver_mhe.set(0, "yref", yref_0)
-    acados_solver_mhe.set(0, "p", F)
+    acados_solver_mhe.set(0, "p", F_vec[0])
 
     # set initial guess to x0_bar
     acados_solver_mhe.set(0, "x", x0_bar)
@@ -67,7 +76,7 @@ if __name__ == "__main__":
     for j in range(1, N):
         yref[:2] = x_noise[j, :]
         acados_solver_mhe.set(j, "yref", yref)
-        acados_solver_mhe.set(j, "p", F)
+        acados_solver_mhe.set(j, "p", F_vec[j])
 
         # set initial guess to x0_bar
         acados_solver_mhe.set(j, "x", x0_bar)
@@ -82,7 +91,7 @@ if __name__ == "__main__":
 
     x_est = np.zeros((N, dim_x))
     m_est = np.zeros((N,1))
-    noise_est = np.zeros((N,2))
+    noise_est = np.zeros((N,3))
 
     # get solution
     for i in range(N):
