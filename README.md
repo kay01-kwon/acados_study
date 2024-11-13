@@ -72,4 +72,4 @@ ocp.constraints.uh = np.array([1e15])
 python3 example_mhe_simple_model.py
 ```
 
-<img src="figures/mhe_simple_system.gif"/>
+<img src="mhe_simple_system.mp4"/>
