@@ -15,7 +15,7 @@ def dynamics_of_simple_system(x, t, F):
 
 if __name__ == "__main__":
 
-    Tf = 2.0
+    Tf = 5.0
     dt = 0.01
     t = np.arange(0, Tf + dt, dt)
     N = t.shape[0]
@@ -56,14 +56,14 @@ if __name__ == "__main__":
     # Weight for Arrival cost
     Q0 = np.diag([1e-3, 1e-3, 1])
 
-    # Weight for noise
-    Q = np.diag([1e-3, 1e-3, 1e-3])
+    # Weight for process noise
+    Q = np.diag([1e-3, 1e-3, 1])
 
     # Weight for State
-    R = 1/dt*np.diag([1, 1])
+    R = 1/dt*np.diag([0.01, 0.01])
 
     # Initial guess about the augmented state
-    x0_bar = np.array([x0[0], x0[1], 0.1])
+    x0_bar = np.array([x0[0], x0[1], 0.5])
 
     acados_solver_mhe = MheSolverForSimpleSystem(N_horizon, time_horizon, Q0, Q, R).get_ocp_solver()
 
@@ -120,6 +120,8 @@ if __name__ == "__main__":
         return line_pos_state, line_pos_state_est, line_vel_state, line_vel_state_est, 
         line_mass_true, line_mass_est
 
+    traj = []
+
     for i in range(N - N_horizon):
         yref_0[:2] = x_noise[i,:]
         yref_0[5:] = x0_bar
@@ -134,17 +136,23 @@ if __name__ == "__main__":
 
         acados_solver_mhe.solve()
 
-        x_augmented = acados_solver_mhe.get(1, "x")
+        x_augmented = acados_solver_mhe.get(0, "x")
         x0_bar = x_augmented
         x_est[i, :] = x_augmented[0:2]
         # print(x_est[:,0])
         m_est[i, :] = x_augmented[2]
         noise_est[i, :] = acados_solver_mhe.get(1, "u")
 
-ani = animation.FuncAnimation(fig = fig, func = update, 
+        # for i in range(N_horizon):
+        #     traj.append(acados_solver_mhe.get(i, 'x'))
+        # print('Start')
+        # print(traj)
+        # print('Finish')
+
+ani = animation.FuncAnimation(fig = fig, func = update,
                               frames = N - N_horizon, interval = 100)
-# plt.show()
-ani.save("mhe_simple_system.gif", writer='pillow', fps = 30)
+plt.show()
+# ani.save("mhe_simple_system.gif", writer='pillow', fps = 30)
 
 
     # plt.figure(1)
@@ -159,5 +167,5 @@ ani.save("mhe_simple_system.gif", writer='pillow', fps = 30)
     # plt.subplot(3,1,3)
     # plt.plot(t[:N-N_horizon],m_true[:N-N_horizon], label="True_mass")
     # plt.plot(t[:N-N_horizon], m_est[:N-N_horizon], label="Est_mass")
-
+    #
     # plt.show()
